@@ -1,0 +1,9 @@
+{
+    "dependencies": [
+        {
+            "name": "Sample",
+            "version": "0.0.1"
+        }
+    ],
+    "registry": "http://localhost:9091/registry"
+}
