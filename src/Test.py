@@ -21,21 +21,21 @@ class TestManifest(unittest.TestCase):
     sample_manifest_dependencies: List = ["Sample-v0.0.1"]
     sample_manifest_request: str = '{"requests:["Sample-v0.0.1"]"}'
 
+    """Testing conversion between JSON file and Dictionary"""
     def test_convert(self):
-        """Testing conversion between JSON file and Dictionary"""
         self.assertEqual(self.sample_manifest_parse, Manifest.file_parse(self, self.sample_manifest_path), "Files should match.")
     
+    """Testing class conversion between JSON file and class dictionary"""
     def test_class_convert(self):
-        """Testing class conversion between JSON file and class dictionary"""
         sample_manifest = Manifest(self.sample_manifest_path)
         self.assertEqual(self.sample_manifest_parse, sample_manifest.manifest, "Class attribute should match sample")
     
+    """Testing dependency list results"""
     def test_class_dependencies(self):
-        """Testing dependency list results"""
         self.assertEqual(self.sample_manifest_dependencies, Manifest(self.sample_manifest_path).dependencies(), "Dependency list should match")
     
+    """Testing request and return results"""
     def test_class_request(self):
-        """Testing request and return results"""
         sample_manifest = Manifest(self.sample_manifest_path)
         self.assertRaises(Exception,make_request(sample_manifest.registry, sample_manifest.dependencies))
 
