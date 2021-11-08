@@ -4,6 +4,7 @@ import string
 
 import requests
 from manifest import Manifest
+from file_config import File_config
 from request_bundler import make_request
 
 class TestManifest(unittest.TestCase):
@@ -38,6 +39,13 @@ class TestManifest(unittest.TestCase):
     def test_class_request(self):
         sample_manifest = Manifest(self.sample_manifest_path)
         self.assertRaises(Exception,make_request(sample_manifest.registry, sample_manifest.dependencies))
+
+class TestFileConfig(unittest.TestCase):
+    sample_name = 'Sample'
+
+    """Testing file configuration"""
+    def test_file_config(self):
+        pass
 
 if __name__ == '__main__':
     unittest.main()
