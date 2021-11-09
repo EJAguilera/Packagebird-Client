@@ -30,8 +30,8 @@ class File_config:
             package.write(f'Fill in later...')
         
         with open(os.path.join(f'packages/{name}_pkg', manifest), 'w') as manifest:
-            manifest.write('\{"name":"'+name+'"\}')
+            manifest.write('{"name":"'+name+'"}')
 
 if __name__=='__main__':
-    # File_config.create_package('Sample')
+    File_config.create_package('Sample')
     File_config.create_package('Meta')
