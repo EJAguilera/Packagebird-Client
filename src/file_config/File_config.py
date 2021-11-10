@@ -21,16 +21,23 @@ class File_config:
         if File_config.create_package_dir():
             click.echo("Creating packages directory...")
         
-        os.mkdir(f'packages/{name}_pkg')
+        os.mkdir(f'packages/{name}')
+        os.mkdir(f'packages/{name}/src')
 
         filename = f'{name}.pkg'
         manifest = 'manifest.json'
+        src_file = 'src.java'
 
-        with open(os.path.join(f'packages/{name}_pkg', filename), 'w') as package:
+        with open(os.path.join(f'packages/{name}', filename), 'w') as package:
             package.write(f'Fill in later...')
         
-        with open(os.path.join(f'packages/{name}_pkg', manifest), 'w') as manifest:
+        with open(os.path.join(f'packages/{name}', manifest), 'w') as manifest:
             manifest.write('{"name":"'+name+'"}')
+        
+        with open(os.path.join(f'packages/{name}/src', src_file), 'w') as file:
+            file.write("class src_file { public static void main(String args) { /* Stub */ } }")
+
+        
 
 if __name__=='__main__':
     File_config.create_package('Sample')
