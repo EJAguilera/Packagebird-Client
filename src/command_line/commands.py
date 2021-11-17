@@ -27,15 +27,18 @@ def init(ctx, manifest):
     pass
 
 @cli.command()
-@click.option('-m', '--manifest', 'manifest')
-@click.option('-r', '--registry', 'registry')
+# @click.option('-m', '--manifest', 'manifest')
+# @click.option('-r', '--registry', 'registry')
+@click.option('-p', '--project', 'project')
 @click.pass_context
-def request(ctx, manifest, registry):
+def request(ctx, project):
     requester = Request_Stub()
-    with click.progressbar(length=len(manifest.dependencies()), label='Loading packages...') as bar:
-        for dependency in manifest.dependencies():
-            response = requester.make_request('http://localhost:4040/',dependency)
-            ctx.invoke(config, name=response)
+    # with click.progressbar(length=len(manifest.dependencies()), label='Loading packages...') as bar:
+    #    for dependency in manifest.dependencies():
+    response = requester.make_request('http://localhost:4040/',project)
+    with click.progressbar(length=len(response), label='Loading packages...') as bar:
+        for package in response:
+            ctx.invoke(config, name=package)
             bar.update(1)
     pass
 
