@@ -10,8 +10,10 @@ class Request_Stub(object):
     def response(self, url, data: str):
         if (data=='BigApple'):
             return ['Markle', 'Apple', 'Markup']
+        elif (data=='StripeScore'):
+            return ['StripeScoreCore', 'Apple', 'Markup', 'Picket']
         else:
-            click.echo(f'Proeject "{data}" not found!')
+            click.echo(f'Project "{data}" not found!')
             return []
 
     """Makes a 'request' to a 'server', for now just returns a string value"""

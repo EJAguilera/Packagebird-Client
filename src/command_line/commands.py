@@ -1,9 +1,12 @@
 import click
 import os
 import sys
+import tarfile
 from src.file_config import File_config
 from src.manifest.manifest import Manifest
 from src.requests.request_stub import Request_Stub
+from src.fileserver.fileserver_client import FileTransfer
+from src.command_line.utils import Utils
 
 @click.group()
 def cli():
@@ -27,23 +30,51 @@ def init(ctx, manifest):
     pass
 
 @cli.command()
-# @click.option('-m', '--manifest', 'manifest')
-# @click.option('-r', '--registry', 'registry')
 @click.option('-p', '--project', 'project')
 @click.pass_context
 def request(ctx, project):
     requester = Request_Stub()
-    # with click.progressbar(length=len(manifest.dependencies()), label='Loading packages...') as bar:
-    #    for dependency in manifest.dependencies():
     response = requester.make_request('http://localhost:4040/',project)
     with click.progressbar(length=len(response), label='Loading packages...') as bar:
         for package in response:
-            ctx.invoke(config, name=package)
+            ctx.invoke(addpackage, name=package, version=1)
             bar.update(1)
     pass
 
 @cli.command()
 @click.option('-p', '--package', 'name')
-def config(name):
-    File_config.File_config.create_package(name)
-    pass
+@click.option('-v', '--version', 'version')
+@click.pass_context
+def addpackage(ctx, name, version):
+    # Makes the packages directory
+    if not os.path.isdir('packages'):
+        click.echo("Creating packages directory...")
+        os.mkdir('packages')
+    os.chdir('packages')
+
+    fileservice = FileTransfer()
+    request_string = f'{name}-v{version}.tar.gz'
+    fileservice.download('127.0.0.1', '50051', request_string)
+
+    #package_path = f'packages/{request_string}'
+    #click.echo(f'Moving {request_string} to {package_path}.')
+    #os.rename(request_string, package_path)
+
+    with tarfile.open(request_string, 'r:gz') as archive:
+        archive.extractall(path='.')
+    os.remove(request_string)
+    os.rename(f'{name}-v{version}', f'{name}')
+    os.chdir('..')
+
+
+@cli.command()
+@click.option('-p', '--project', 'project')
+@click.pass_context
+def setup(ctx, project):
+    fileservice = FileTransfer()
+    utils = Utils()
+    packages_strings = utils.project_packages(project)
+    for package_addr in packages_strings:
+        package_name = package_addr[0]
+        package_version = package_addr[1]
+        ctx.invoke(addpackage, name=package_name, version=package_version)
