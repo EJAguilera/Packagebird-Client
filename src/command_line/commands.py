@@ -7,6 +7,7 @@ from src.manifest.manifest import Manifest
 from src.requests.request_stub import Request_Stub
 from src.fileserver.fileserver_client import FileTransfer
 from src.command_line.utils import Utils
+from src.package_operations.package_operations import PackageOperations 
 
 @click.group()
 def cli():
@@ -119,3 +120,33 @@ def createpackage(ctx):
     fileservice = FileTransfer()
     fileservice.upload('127.0.0.1', '50051', package_name)
     os.remove(package_name)
+
+# List out packages on server
+@cli.command()
+@click.pass_context
+def listpackages(ctx):
+    packageoperations = PackageOperations()
+    packagelist = packageoperations.list_packages('127.0.0.1','50051')
+    click.echo(f'{packagelist.list}')
+
+# Call the test method on the server
+@cli.command()
+@click.option('-p', '--package', 'name')
+@click.option('-v', '--version', 'version')
+@click.pass_context
+def testpackage(ctx, name, version):
+    packageoperations = PackageOperations()
+    request_string = f'{name}-v{version}'
+    response = packageoperations.test_package('127.0.0.1', '50051', request_string)
+    click.echo(f'{response.response}')
+
+# Call the build method on the server
+@cli.command()
+@click.option('-p', '--package', 'name')
+@click.option('-v', '--version', 'version')
+@click.pass_context
+def buildpackage(ctx, name, version):
+    packageoperations = PackageOperations()
+    request_string = f'{name}-v{version}'
+    response = packageoperations.build_package('127.0.0.1', '50051', request_string)
+    click.echo(f'{response.response}')
