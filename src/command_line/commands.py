@@ -150,3 +150,4 @@ def buildpackage(ctx, name, version):
     request_string = f'{name}-v{version}'
     response = packageoperations.build_package('127.0.0.1', '50051', request_string)
     click.echo(f'{response.response}')
+
