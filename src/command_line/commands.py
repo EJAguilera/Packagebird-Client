@@ -10,6 +10,7 @@ from src.command_line.utils import Utils
 
 @click.group()
 def cli():
+    # The entry point for the command line interface
     pass
 
 @cli.command()
@@ -41,6 +42,7 @@ def request(ctx, project):
             bar.update(1)
     pass
 
+# Add package to the development directory
 @cli.command()
 @click.option('-p', '--package', 'name')
 @click.option('-v', '--version', 'version')
@@ -51,22 +53,28 @@ def addpackage(ctx, name, version):
         click.echo("Creating packages directory...")
         os.mkdir('packages')
     os.chdir('packages')
+    
+    # Create Package Directory
+    os.mkdir(f'{name}')
+    os.chdir(f'{name}')
 
+    # Download the archived package
     fileservice = FileTransfer()
     request_string = f'{name}-v{version}.tar.gz'
-    fileservice.download('127.0.0.1', '50051', request_string)
+    fileservice.download('127.0.0.1', '50051', f'{request_string}')
 
-    #package_path = f'packages/{request_string}'
-    #click.echo(f'Moving {request_string} to {package_path}.')
-    #os.rename(request_string, package_path)
-
+    # Extract the contents
     with tarfile.open(request_string, 'r:gz') as archive:
         archive.extractall(path='.')
+    
+    # Remove the archive file
     os.remove(request_string)
-    os.rename(f'{name}-v{version}', f'{name}')
+
+    # Move back to the development root directory
+    os.chdir('..')
     os.chdir('..')
 
-
+# Gets packages associated with a project
 @cli.command()
 @click.option('-p', '--project', 'project')
 @click.pass_context
@@ -78,3 +86,36 @@ def setup(ctx, project):
         package_name = package_addr[0]
         package_version = package_addr[1]
         ctx.invoke(addpackage, name=package_name, version=package_version)
+
+def filter_contents(tarinfo):
+    if tarinfo.name == 'packages':
+        return None
+    else:
+        return tarinfo
+
+# Create package from a development directory
+@cli.command()
+@click.pass_context
+def createpackage(ctx):
+    # Get packages and location
+    project_name = os.path.basename(os.getcwd())
+    version = 1
+    message = f'Project Name: {project_name}, version: {version}'
+    print(message)
+
+    # Package name
+    package_name = f'{project_name}-v{version}.tar.gz'
+
+    # Add the contents
+    with tarfile.open(package_name, 'w:gz', format=tarfile.GNU_FORMAT) as tar:
+        # os.mkdir()
+        for directory, directorynames, filenames in os.walk("."):
+            for file in filenames:
+                # print(f'Directory Visited: {directory}')
+                if directory != ".\packages" and directory != "./packages":
+                    tar.add(os.path.join(directory, file))
+
+    # Upload to server
+    fileservice = FileTransfer()
+    fileservice.upload('127.0.0.1', '50051', package_name)
+    os.remove(package_name)
