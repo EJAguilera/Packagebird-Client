@@ -66,7 +66,10 @@ def addpackage(ctx, name, version):
 
     # Extract the contents
     with tarfile.open(request_string, 'r:gz') as archive:
-        archive.extractall(path='.')
+        try:
+            archive.extractall(path='.')
+        except tarfile.ReadError:
+            click.echo('Empty file found.')
     
     # Remove the archive file
     os.remove(request_string)
@@ -96,8 +99,9 @@ def filter_contents(tarinfo):
 
 # Create package from a development directory
 @cli.command()
+@click.option('--debug', is_flag=True)
 @click.pass_context
-def createpackage(ctx):
+def createpackage(ctx, debug):
     # Get packages and location
     project_name = os.path.basename(os.getcwd())
     version = 1
@@ -112,13 +116,27 @@ def createpackage(ctx):
         # os.mkdir()
         for directory, directorynames, filenames in os.walk("."):
             for file in filenames:
-                # print(f'Directory Visited: {directory}')
-                if directory != ".\packages" and directory != "./packages":
-                    tar.add(os.path.join(directory, file))
+                if (debug):
+                    click.echo(f'Directory Visited: {directory}')
+
+                if "/packages/" not in directory and "\\packages\\" not in directory and "./packages/" not in directory:
+                    if (debug):
+                        click.echo(f'Visited directory and file not in packages. File reached is {file}.')
+                    
+                    if file != package_name:
+                        tar.add(os.path.join(directory, file))
+                    else:
+                        if (debug):
+                            click.echo(f'File {file} is the temp client tar file, should not be bundled.')
+                elif debug:
+                    click.echo(f'File visited in packages directory! Directory is {directory}, file is {file}')
+                    
+
 
     # Upload to server
-    fileservice = FileTransfer()
-    fileservice.upload('127.0.0.1', '50051', package_name)
+    if (not debug):
+        fileservice = FileTransfer()
+        fileservice.upload('127.0.0.1', '50051', package_name)
     os.remove(package_name)
 
 # List out packages on server
