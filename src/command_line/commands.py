@@ -113,7 +113,6 @@ def createpackage(ctx, debug):
 
     # Add the contents
     with tarfile.open(package_name, 'w:gz', format=tarfile.GNU_FORMAT) as tar:
-        # os.mkdir()
         for directory, directorynames, filenames in os.walk("."):
             for file in filenames:
                 if (debug):
