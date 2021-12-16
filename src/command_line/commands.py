@@ -9,13 +9,27 @@ from src.fileserver.fileserver_client import FileTransfer
 from src.command_line.utils import Utils
 from src.package_operations.package_operations import PackageOperations 
 
+def group_redefine_class():
+    class CommandOptionRequiredClass(click.Group):
+        #def get_help(self, ctx):
+        #    return """
+        #    Sample Multi-Line Helpfile...
+        #    """
+        def get_short_help_str(self, limit: int = 45) -> str:
+            return super(click.Group).get_help()
+
+    return CommandOptionRequiredClass
+
+# cls=group_redefine_class()
 @click.group()
+# @click.pass_context
 def cli():
+    """Client utility for managing packages, is a group command for the subcommands below."""
     # The entry point for the command line interface
     pass
 
-@cli.command()
-@click.option('-m', '--manifest', 'manifest')
+@cli.command('init', short_help='Initializes a directory from a manifest file.')
+@click.option('-m', '--manifest', 'manifest', help='Initialized a project directory from a manifest file.')
 @click.pass_context
 def init(ctx, manifest):
     if manifest == None:
@@ -31,7 +45,7 @@ def init(ctx, manifest):
     ctx.invoke(request, manifest=local_manifest, registry='http:///localhost:4040/')
     pass
 
-@cli.command()
+@cli.command('request', short_help='Pulls from a project package.')
 @click.option('-p', '--project', 'project')
 @click.pass_context
 def request(ctx, project):
@@ -44,7 +58,7 @@ def request(ctx, project):
     pass
 
 # Add package to the development directory
-@cli.command()
+@cli.command('addpackage', short_help='Adds a package to development directory packages subdirectory')
 @click.option('-p', '--package', 'name')
 @click.option('-v', '--version', 'version')
 @click.pass_context
@@ -79,7 +93,7 @@ def addpackage(ctx, name, version):
     os.chdir('..')
 
 # Gets packages associated with a project
-@cli.command()
+@cli.command('setup', short_help='Sets up a project directory from passed name')
 @click.option('-p', '--project', 'project')
 @click.pass_context
 def setup(ctx, project):
@@ -99,7 +113,7 @@ def filter_contents(tarinfo):
 
 # Create package from a development directory
 @cli.command()
-@click.option('--debug', is_flag=True)
+@click.option('--debug', is_flag=True, help='Debug option for')
 @click.pass_context
 def createpackage(ctx, debug):
     # Get packages and location
@@ -167,4 +181,3 @@ def buildpackage(ctx, name, version):
     request_string = f'{name}-v{version}'
     response = packageoperations.build_package('127.0.0.1', '50051', request_string)
     click.echo(f'{response.response}')
-
