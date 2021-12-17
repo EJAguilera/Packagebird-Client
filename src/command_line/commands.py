@@ -28,7 +28,7 @@ def cli():
     # The entry point for the command line interface
     pass
 
-@cli.command('init', short_help='Initializes a directory from a manifest file.')
+@cli.command('init', short_help='Initializes a directory from a manifest file. Depricated.')
 @click.option('-m', '--manifest', 'manifest', help='Initialized a project directory from a manifest file.')
 @click.pass_context
 def init(ctx, manifest):
@@ -112,7 +112,7 @@ def filter_contents(tarinfo):
         return tarinfo
 
 # Create package from a development directory
-@cli.command()
+@cli.command('createpackage', short_help='Creates a package from the current directory')
 @click.option('--debug', is_flag=True, help='Debug option for')
 @click.pass_context
 def createpackage(ctx, debug):
@@ -153,7 +153,7 @@ def createpackage(ctx, debug):
     os.remove(package_name)
 
 # List out packages on server
-@cli.command()
+@cli.command('listpackage', short_help='List all packages stored on server')
 @click.pass_context
 def listpackages(ctx):
     packageoperations = PackageOperations()
@@ -161,7 +161,7 @@ def listpackages(ctx):
     click.echo(f'{packagelist.list}')
 
 # Call the test method on the server
-@cli.command()
+@cli.command('testpackage', short_help='Calls the (dummy) test-method on the package')
 @click.option('-p', '--package', 'name')
 @click.option('-v', '--version', 'version')
 @click.pass_context
@@ -172,7 +172,7 @@ def testpackage(ctx, name, version):
     click.echo(f'{response.response}')
 
 # Call the build method on the server
-@cli.command()
+@cli.command('buildpackage', short_help='Calls the (dummy) build-method on the package')
 @click.option('-p', '--package', 'name')
 @click.option('-v', '--version', 'version')
 @click.pass_context
