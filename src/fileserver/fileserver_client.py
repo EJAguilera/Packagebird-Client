@@ -1,6 +1,7 @@
 import grpc
 import src.fileserver.FileTransfer_pb2 as FileTransfer_pb2
 import src.fileserver.FileTransfer_pb2_grpc as FileTransfer_pb2_grpc
+import src.command_line.utils as utils
 
 class FileTransfer(object):
     def __init__(self) -> None:

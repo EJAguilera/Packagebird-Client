@@ -2,12 +2,15 @@ import click
 import os
 import sys
 import tarfile
+
+import grpc
 from src.file_config import File_config
 from src.manifest.manifest import Manifest
 from src.requests.request_stub import Request_Stub
 from src.fileserver.fileserver_client import FileTransfer
 from src.command_line.utils import Utils
 from src.package_operations.package_operations import PackageOperations 
+from src.command_line.CommandLineContainer import CLIContainer as clicontainer
 
 def group_redefine_class():
     class CommandOptionRequiredClass(click.Group):
@@ -22,13 +25,13 @@ def group_redefine_class():
 
 # cls=group_redefine_class()
 @click.group()
-# @click.pass_context
-def cli():
-    """Client utility for managing packages, is a group command for the subcommands below."""
+@click.pass_context
+def cli(ctx):
+    """Client utility for managing packages, is a group command for the subcommands below. Call --help on a subcommand to get further details."""
     # The entry point for the command line interface
-    pass
+    ctx.obj = clicontainer()
 
-@cli.command('init', short_help='Initializes a directory from a manifest file. Depricated.')
+@cli.command('init', short_help='Initializes a directory from a manifest file. Depricated.\nOPTIONS:\n-m, --manifest\tInitializes a project from a manifest file.')
 @click.option('-m', '--manifest', 'manifest', help='Initialized a project directory from a manifest file.')
 @click.pass_context
 def init(ctx, manifest):
@@ -43,7 +46,6 @@ def init(ctx, manifest):
             return
         local_manifest = Manifest(manifest)
     ctx.invoke(request, manifest=local_manifest, registry='http:///localhost:4040/')
-    pass
 
 @cli.command('request', short_help='Pulls from a project package.')
 @click.option('-p', '--project', 'project')
@@ -55,7 +57,6 @@ def request(ctx, project):
         for package in response:
             ctx.invoke(addpackage, name=package, version=1)
             bar.update(1)
-    pass
 
 # Add package to the development directory
 @cli.command('addpackage', short_help='Adds a package to development directory packages subdirectory')
@@ -167,8 +168,22 @@ def listpackages(ctx):
 @click.pass_context
 def testpackage(ctx, name, version):
     packageoperations = PackageOperations()
+    if name=='' or name==None:
+        click.echo('Package name required!')
+        ctx.exit()
+    
+    if version=='' or version==None:
+        click.echo('Package version required!')
+        ctx.exit()
+
     request_string = f'{name}-v{version}'
-    response = packageoperations.test_package('127.0.0.1', '50051', request_string)
+
+    try:
+        response = packageoperations.test_package(ctx.obj.address, ctx.obj.port, request_string)
+    except grpc._channel._InactiveRpcError:
+        click.echo('Server inactive or failed to connect!')
+        ctx.exit()
+    
     click.echo(f'{response.response}')
 
 # Call the build method on the server
@@ -177,7 +192,21 @@ def testpackage(ctx, name, version):
 @click.option('-v', '--version', 'version')
 @click.pass_context
 def buildpackage(ctx, name, version):
+    
     packageoperations = PackageOperations()
+    if name=='' or name==None:
+        click.echo('Package name required!')
+        ctx.exit()
+    
+    if version=='' or version==None:
+        click.echo('Package version required!')
+        ctx.exit()
+
     request_string = f'{name}-v{version}'
-    response = packageoperations.build_package('127.0.0.1', '50051', request_string)
+    try:
+        response = packageoperations.build_package(ctx.obj.address, ctx.obj.port, request_string)
+    except grpc._channel._InactiveRpcError:
+        click.echo('Server inactive or failed to connect!')
+        ctx.exit()
+
     click.echo(f'{response.response}')
